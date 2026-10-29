@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Encuesta De Integración Grupal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Didact+Gothic&display=swap">
+<style>
+/* Sistema "Facultad De Contaduría Y Administración" (FCA UAQ): un solo tema claro, fondo blanco, esquinas rectas.
+   Layout: membrete verde-fca con escudos → banda verde-oscuro → formulario por secciones sobre blanco → pie azul-marino. */
+:root{
+  color-scheme:light;
+  --verde-fca:#005850; --verde-oscuro:#074A41; --verde-profundo:#003F3D; --verde-titulo:#004A44; --verde-medio:#7FB2AB;
+  --menta:#CFE3E0; --lima:#C4D028; --azul-marino:#194563; --blanco:#FFFFFF;
+  --gris-texto:#4D4D4D; --gris-suave:#666666; --linea:#D5E3E0; --forma-fondo:#F7F7F7;
+  --verde-tinte:#EAF2F0; --error:#A3261B; --error-tinte:#FBECEA;
+  --gothic:"Century Gothic","TeX Gyre Adventor","URW Gothic","Didact Gothic",Questrial,sans-serif;
+}
+*{box-sizing:border-box}
+html, body{margin:0}
+img{max-width:100%}
+[hidden]{display:none !important}
+body{background:var(--blanco); color:var(--gris-texto); font-family:var(--gothic); font-size:17px; line-height:1.5}
+/* Toda la página en Mayúscula Inicial; lo que escribe cada persona y los correos se respetan tal cual. */
+body, button{text-transform:capitalize}
+input, textarea, .sin-mayus{text-transform:none}
+textarea::placeholder{text-transform:capitalize}
+.gutter{padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px))}
+.ancho{max-width:720px; margin:0 auto; width:100%}
+.pila{display:flex; flex-direction:column; gap:36px}
+h1,h2,h3{font-family:var(--gothic); font-weight:700; margin:0; text-wrap:balance}
+p{margin:0}
+button:focus-visible, textarea:focus-visible, input:focus-visible{outline:3px solid var(--azul-marino); outline-offset:2px}
+
+/* Membrete */
+.membrete{background:var(--verde-fca); color:var(--blanco); padding-block:12px}
+.membrete .ancho{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.escudos{display:flex; align-items:center; gap:12px}
+.escudos img{height:52px; width:auto}
+.membrete .der{font-size:14px; font-weight:700; color:var(--menta); text-align:right; font-variant-numeric:tabular-nums}
+
+/* Banda */
+.banda{background:var(--verde-oscuro); color:var(--blanco); padding-block:30px 34px; position:relative; overflow:hidden}
+.lineas{position:absolute; top:0; right:0; width:72px; height:64px; overflow:hidden; pointer-events:none}
+.lineas i{position:absolute; top:-10px; width:2px; height:150px; background:var(--lima); transform:rotate(40deg); transform-origin:top}
+.lineas i:nth-child(1){right:-30px} .lineas i:nth-child(2){right:-6px} .lineas i:nth-child(3){right:18px}
+.banda .ancho{display:flex; flex-direction:column; gap:12px; position:relative; z-index:1}
+.etq-lima{font-size:13px; font-weight:700; letter-spacing:.04em; color:var(--lima)}
+.banda h1{font-size:clamp(30px,8vw,44px); line-height:1.1; color:var(--blanco); padding-right:60px}
+.banda .desc{color:var(--menta); max-width:60ch}
+.pestanas{display:flex; gap:8px; flex-wrap:wrap; margin-top:6px}
+.pestana{font:inherit; font-size:15px; font-weight:700; padding:8px 14px; background:transparent; color:var(--menta); border:1.5px solid var(--verde-medio); cursor:pointer; border-radius:0}
+.pestana[aria-selected="true"]{background:var(--lima); color:var(--verde-profundo); border-color:var(--lima)}
+
+/* Secciones */
+main.cuerpo{padding-block:32px 48px}
+.seccion{display:flex; flex-direction:column; gap:16px}
+.encabezado{display:flex; flex-direction:column; gap:6px}
+.etq{font-size:13px; font-weight:700; color:var(--verde-fca); font-variant-numeric:tabular-nums}
+.encabezado h2{font-size:24px; line-height:1.15; color:var(--verde-titulo)}
+.encabezado h2::after{content:""; display:block; width:64px; height:5px; background:var(--verde-fca); margin-top:8px}
+.nota{font-size:15px; color:var(--gris-suave)}
+.aviso{border:1.5px solid var(--verde-fca); background:var(--verde-tinte); padding:14px 16px; font-size:15px}
+.aviso.error{border-color:var(--error); background:var(--error-tinte); color:var(--error)}
+
+/* Opciones tipo tarjeta (radio) */
+.opciones{display:grid; gap:10px}
+.opciones.dos{grid-template-columns:repeat(auto-fit, minmax(240px, 1fr))}
+.op{display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left; font:inherit; color:var(--gris-texto); background:var(--blanco); border:1.5px solid var(--linea); padding:12px 14px; cursor:pointer; border-radius:0}
+.op:hover{border-color:var(--verde-fca)}
+.op .marca{flex:none; width:22px; height:22px; border:1.5px solid var(--verde-medio); margin-top:1px}
+.op b{display:block; color:var(--verde-titulo); font-size:17px}
+.op small{display:block; font-size:14px; color:var(--gris-suave)}
+.op span{min-width:0}
+.op[aria-checked="true"]{border:2px solid var(--verde-fca); background:var(--verde-tinte); padding:11.5px 13.5px}
+.op[aria-checked="true"] .marca{border-color:var(--verde-fca); background:var(--verde-fca); box-shadow:inset 0 0 0 4px var(--blanco)}
+input.campo, textarea{width:100%; font:inherit; color:var(--gris-texto); background:var(--blanco); border:1.5px solid var(--verde-medio); padding:12px; border-radius:0}
+textarea{min-height:120px; resize:vertical}
+label.lab{font-size:14px; font-weight:700; color:var(--verde-titulo); display:block; margin-bottom:6px}
+.contador{font-size:13px; color:var(--gris-suave); text-align:right; font-variant-numeric:tabular-nums}
+
+/* Pregunta */
+.preg{display:flex; flex-direction:column; gap:12px; padding-top:18px; border-top:1px solid var(--linea)}
+.preg:first-of-type{border-top:0; padding-top:0}
+.preg .num{font-size:13px; font-weight:700; color:var(--verde-fca); font-variant-numeric:tabular-nums}
+.preg .q{font-weight:700; color:var(--verde-titulo); font-size:clamp(18px,4.6vw,20px); line-height:1.3; text-wrap:pretty}
+.preg.falta .q{color:var(--error)}
+.preg.falta .num::after{content:" · Falta Responder"; color:var(--error)}
+.preg.falta .lab{color:var(--error)}
+.preg.falta .campo{border-color:var(--error)}
+
+/* Barra con carita */
+.nivel{display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center}
+.cara{width:76px; height:76px; flex:none}
+.cara svg{width:100%; height:100%; display:block}
+.cara .rostro, .cara .rasgo{transition:fill .25s, stroke .25s}
+.cara .boca, .cara .ceja{transition:d .25s}
+.control{display:flex; flex-direction:column; gap:6px; min-width:0}
+.lectura{display:flex; align-items:baseline; gap:10px; flex-wrap:wrap}
+.lectura .valor{font-size:30px; font-weight:700; line-height:1; color:var(--verde-fca); font-variant-numeric:tabular-nums; min-width:2ch}
+.lectura .estado{font-size:15px; font-weight:700; color:var(--gris-suave)}
+input[type=range]{-webkit-appearance:none; appearance:none; width:100%; height:32px; background:transparent; margin:0; cursor:pointer; --pct:50%; --tono:var(--verde-medio)}
+input[type=range]::-webkit-slider-runnable-track{height:8px; background:linear-gradient(90deg, var(--tono) 0 var(--pct), var(--linea) var(--pct) 100%)}
+input[type=range]::-moz-range-track{height:8px; background:linear-gradient(90deg, var(--tono) 0 var(--pct), var(--linea) var(--pct) 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:28px; height:28px; margin-top:-10px; background:var(--blanco); border:3px solid var(--tono); border-radius:0}
+input[type=range]::-moz-range-thumb{width:22px; height:22px; background:var(--blanco); border:3px solid var(--tono); border-radius:0}
+input[type=range]:focus-visible{outline:3px solid var(--azul-marino); outline-offset:4px}
+.marcas{display:flex; justify-content:space-between; padding:0 4px}
+.marcas button{width:20px; font:inherit; font-size:13px; font-weight:700; color:var(--gris-suave); background:none; border:0; padding:2px 0; cursor:pointer; text-align:center; font-variant-numeric:tabular-nums}
+.marcas button[aria-current="true"]{color:var(--verde-fca)}
+.extremos{display:flex; justify-content:space-between; font-size:13px; color:var(--gris-suave); gap:12px}
+
+.btn{font:inherit; font-weight:700; font-size:17px; padding:15px 18px; cursor:pointer; border:2px solid var(--verde-fca); background:var(--verde-fca); color:var(--blanco); width:100%; border-radius:0}
+.btn.contorno{background:var(--blanco); color:var(--verde-fca)}
+.btn:disabled{opacity:.55; cursor:default}
+.fila{display:flex; gap:12px; flex-wrap:wrap}
+.fila > *{flex:1 1 220px}
+
+/* Confirmación */
+.listo{background:var(--verde-fca); color:var(--blanco); outline:1.5px solid var(--verde-medio); outline-offset:-7px; padding:24px 24px 26px; display:flex; flex-direction:column; gap:8px}
+.listo strong{font-size:24px}
+.listo span{color:var(--menta)}
+
+/* Resultados */
+.dato{background:var(--verde-profundo); color:var(--blanco); padding:22px; display:grid; grid-template-columns:repeat(auto-fit, minmax(150px,1fr)); gap:18px}
+.dato div{display:flex; flex-direction:column; gap:4px}
+.cifra{font-weight:700; color:var(--lima); font-size:clamp(44px,12vw,64px); line-height:1; font-variant-numeric:tabular-nums}
+.cifra small{font-size:22px; color:var(--menta); font-weight:400}
+.dato p{color:var(--menta); font-size:15px}
+.lectura-final{background:var(--azul-marino); color:var(--blanco); padding:20px 22px; display:flex; flex-direction:column; gap:10px}
+.lectura-final .etq{color:var(--lima)}
+.lectura-final ul{margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px}
+.res-nivel{display:grid; grid-template-columns:56px minmax(0,1fr); gap:14px; align-items:start; padding-block:14px; border-top:1px solid var(--linea)}
+.res-nivel .cara{width:56px; height:56px}
+.res-nivel .t{font-weight:700; color:var(--verde-titulo); line-height:1.3}
+.res-nivel .prom{font-weight:700; color:var(--verde-fca); font-variant-numeric:tabular-nums}
+.dist{display:grid; grid-template-columns:repeat(10, minmax(0,1fr)); gap:3px; align-items:end; height:46px; margin-top:8px}
+.dist i{display:block; background:var(--verde-medio); min-height:2px}
+.dist-num{display:grid; grid-template-columns:repeat(10, minmax(0,1fr)); gap:3px; font-size:11px; color:var(--gris-suave); text-align:center; font-variant-numeric:tabular-nums}
+.barras{display:grid; gap:12px}
+.barras .r{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px 12px; font-variant-numeric:tabular-nums}
+.barras .r b{color:var(--verde-fca)}
+.pista{grid-column:1 / -1; height:8px; background:var(--linea)}
+.pista i{display:block; height:100%; background:var(--verde-fca)}
+.respuestas-ab{display:grid; gap:10px}
+.resp{border:1.5px solid var(--linea); padding:12px 14px; display:flex; flex-direction:column; gap:4px}
+.resp .quien{font-size:13px; font-weight:700; color:var(--gris-suave)}
+.vacio{border:1.5px dashed var(--verde-medio); padding:20px; color:var(--gris-suave)}
+.registro{display:grid; border-top:1px solid var(--linea)}
+.fila-reg{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px 12px; align-items:center; padding-block:12px; border-bottom:1px solid var(--linea)}
+.fila-reg.activa{background:var(--error-tinte); padding-inline:12px}
+.fila-reg .who{display:flex; flex-direction:column; gap:2px; min-width:0}
+.fila-reg .correo{font-weight:700; color:var(--verde-titulo); overflow-wrap:anywhere}
+.fila-reg .acc{display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end}
+.confirma{grid-column:1 / -1; font-size:15px; font-weight:700; color:var(--error)}
+.confirma.fuerte{border-left:4px solid var(--error); padding-left:10px}
+.mini{font:inherit; font-size:14px; font-weight:700; padding:7px 12px; cursor:pointer; background:var(--blanco); color:var(--gris-texto); border:1.5px solid var(--linea); border-radius:0}
+.mini.peligro{color:var(--error); border-color:var(--error)}
+.mini.peligro.lleno{background:var(--error); color:var(--blanco)}
+.mini:disabled{opacity:.55; cursor:default}
+@media (max-width:420px){ .fila-reg{grid-template-columns:1fr} .fila-reg .acc{justify-content:flex-start} }
+
+footer{background:var(--azul-marino); color:var(--blanco); padding-block:22px 28px; position:relative; overflow:hidden}
+footer::before, footer::after{content:""; position:absolute; border:1.5px solid rgba(255,255,255,.35); border-radius:999px; pointer-events:none}
+footer::before{width:150px; height:150px; right:-50px; top:-60px}
+footer::after{width:90px; height:90px; right:30px; top:-30px}
+footer .ancho{display:flex; align-items:center; gap:16px; flex-wrap:wrap; position:relative; z-index:1}
+footer img{height:34px; width:auto}
+footer p{font-size:14px; color:var(--blanco)}
+footer .admin{margin-left:auto; font:inherit; font-size:13px; font-weight:700; color:var(--lima); background:none; border:1.5px solid var(--lima); padding:6px 12px; cursor:pointer; border-radius:0}
+footer .admin:hover{background:var(--lima); color:var(--azul-marino)}
+.candado{border:1.5px solid var(--verde-fca); padding:20px; display:flex; flex-direction:column; gap:14px; max-width:460px}
+.candado .campo.mal{border-color:var(--error)}
+.leyenda{font-size:14px; font-weight:700; color:var(--verde-fca)}
+.op[role="checkbox"] .marca{position:relative}
+.op[role="checkbox"][aria-checked="true"] .marca{box-shadow:none}
+.op[role="checkbox"][aria-checked="true"] .marca::after{content:""; position:absolute; left:6px; top:2px; width:6px; height:11px; border:solid var(--blanco); border-width:0 3px 3px 0; transform:rotate(45deg)}
+@keyframes entra{from{opacity:.4; transform:translateY(10px)} to{opacity:1; transform:none}}
+.anima{animation:entra .4s cubic-bezier(.2,.7,.2,1) both}
+@media (max-width:420px){ .nivel{grid-template-columns:1fr} .cara{width:64px; height:64px} }
+@media (prefers-reduced-motion: reduce){ *, *::before, *::after{animation:none !important; transition:none !important} }
+</style>
+</head>
+<body>
+<div id="app" aria-live="polite"></div>
+<footer class="gutter"><div class="ancho" id="pie"></div></footer>
+
+<script>
+const LOGOS = {uaq:"data:image/png;base64,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", fca:"data:image/png;base64,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", letras:"data:image/png;base64,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"};
+
+/* Dirección de la aplicación web de Google. Solo hace falta si este .html se abre fuera de Google
+   (por ejemplo, subido a otra página). Desde el enlace de Google funciona sin llenarla. */
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbyC-1JUwurxGbqkuC-xjczY-5rjM1MmGcDpqD-l28exBbEw0RaC1GforZWFeIE3BaBZ/exec";
+
+const NIVELES = [
+  {id:"conocer",   q:"¿Qué tanto sientes que conoces a la mayoría de tus compañeros del salón?", bajo:"Casi a nadie", alto:"A casi todos"},
+  {id:"pertenecer",q:"¿Qué tanto sientes que formas parte del grupo?", bajo:"Nada", alto:"Totalmente"},
+  {id:"platicar",  q:"¿Qué tan fácil es iniciar una conversación con cualquier compañero del salón?", bajo:"Muy difícil", alto:"Muy fácil"},
+  {id:"equipo",    q:"¿Qué tan cómodo(a) te sientes trabajando en equipo con cualquier compañero?", bajo:"Muy incómodo", alto:"Muy cómodo"},
+  {id:"confianza", q:"¿Qué tanta confianza sientes para expresar tus opiniones dentro del salón?", bajo:"Ninguna", alto:"Mucha"},
+  {id:"general",   q:"En general, ¿qué calificación le das a la integración del salón?", bajo:"Muy mala", alto:"Excelente"},
+];
+const MULTIPLES = [
+  {id:"obstaculo", q:"¿Qué impide que el grupo se integre?", o:[
+    "Los grupos de amigos ya están cerrados",
+    "La timidez o la falta de confianza",
+    "Casi no hay actividades donde convivamos todos",
+    "Los horarios, el trabajo o la distancia",
+    "Siento que no hay ningún obstáculo"]},
+  {id:"actividad", q:"¿Qué actividades ayudarían a integrar al salón?", o:[
+    "Una convivencia fuera de clases",
+    "Equipos de trabajo formados al azar",
+    "Dinámicas de integración en clase",
+    "Actividades deportivas o culturales",
+    "Un grupo de chat con todo el salón"]},
+];
+const ABIERTAS = [
+  {id:"facilita", q:"¿Qué es lo que más te facilita o te dificulta integrarte con tus compañeros? Cuéntalo brevemente."},
+  {id:"cambio",   q:"Si pudieras cambiar una cosa para que el grupo estuviera más unido, ¿qué sería?"},
+];
+const TOTAL = NIVELES.length + MULTIPLES.length + ABIERTAS.length;
+const MAXTXT = 600;
+
+const $app = document.getElementById("app");
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const img = (k, alt) => LOGOS[k].startsWith("data:") ? `<img src="${LOGOS[k]}" alt="${alt}">` : "";
+const nn = n => String(n).padStart(2, "0");
+
+/* ---------- Conexión con Google ---------- */
+const GS = () => window.google && google.script && google.script.run;
+const CONECTADA = !!GS() || /^https:\/\/script\.google\.com\//.test(ENDPOINT);
+function api(fn, ...args){
+  if (GS()) return new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)[fn](...args));
+  if (!CONECTADA) return Promise.reject(new Error("sin_conexion"));
+  return fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({fn, args})}).then(r => r.json());
+}
+
+/* Marca en este dispositivo para no mostrar el formulario a quien ya respondió. */
+const MARCA = "encuesta-integracion-g19-e4";
+const leerMarca = () => { try { return localStorage.getItem(MARCA) || ""; } catch (e){ return ""; } };
+const guardarMarca = c => { try { localStorage.setItem(MARCA, c); } catch (e){} };
+const borrarMarca = () => { try { localStorage.removeItem(MARCA); } catch (e){} };
+
+document.getElementById("pie").innerHTML = `${img("letras", "FCA")}<p>Facultad De Contaduría Y Administración · UAQ<br>Licenciatura En Negocios Y Comercio Internacional · Equipo 4 · Grupo 19</p><button class="admin" id="ir-admin" type="button">Resultados · Solo Administradores</button>`;
+document.getElementById("ir-admin").onclick = () => { S.vista = S.desbloqueado ? "res" : "clave"; S.claveError = ""; render(); window.scrollTo(0,0); };
+
+/* ---------- Carita ---------- */
+const STOPS = [[1,[163,38,27]], [5.5,[196,208,40]], [10,[0,88,80]]];
+function tono(v){
+  if (v == null) return "#7FB2AB";
+  let a = STOPS[0], b = STOPS[STOPS.length - 1];
+  for (let i = 0; i < STOPS.length - 1; i++) if (v >= STOPS[i][0] && v <= STOPS[i+1][0]){ a = STOPS[i]; b = STOPS[i+1]; }
+  const t = b[0] === a[0] ? 0 : (v - a[0]) / (b[0] - a[0]);
+  const c = a[1].map((x, i) => Math.round(x + (b[1][i] - x) * t));
+  return `rgb(${c.join(",")})`;
+}
+function rasgo(v){
+  if (v == null) return "#4D4D4D";
+  if (v >= 4.5 && v <= 7) return "#5E6612";
+  return tono(v);
+}
+function tinte(v){
+  if (v == null) return "#F7F7F7";
+  const m = tono(v).match(/\d+/g).map(Number).map(x => Math.round(x + (255 - x) * .86));
+  return `rgb(${m.join(",")})`;
+}
+function caraSVG(v){
+  const t = v == null ? .5 : (v - 1) / 9;
+  const cy = 66 + (t - .5) * 34;
+  const by = v == null ? 0 : (.5 - t) * 8;
+  const ojo = 4 + t * .8;
+  const col = rasgo(v);
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">
+    <circle class="rostro" cx="50" cy="50" r="45" fill="${tinte(v)}" stroke="${tono(v)}" stroke-width="5"/>
+    <path class="ceja" d="M27 ${33 - by} L41 ${33 + by}" stroke="${col}" stroke-width="4" stroke-linecap="square" fill="none"/>
+    <path class="ceja" d="M59 ${33 + by} L73 ${33 - by}" stroke="${col}" stroke-width="4" stroke-linecap="square" fill="none"/>
+    <circle class="rasgo" cx="36" cy="45" r="${ojo}" fill="${col}"/>
+    <circle class="rasgo" cx="64" cy="45" r="${ojo}" fill="${col}"/>
+    <path class="boca" d="M31 66 Q50 ${cy} 69 66" stroke="${col}" stroke-width="5" stroke-linecap="square" fill="none"/>
+  </svg>`;
+}
+const ESTADO = v => v == null ? "Arrastra Para Responder" : v <= 2 ? "Muy Insatisfecho" : v <= 4 ? "Insatisfecho" : v <= 6 ? "Regular" : v <= 8 ? "Satisfecho" : "Muy Satisfecho";
+
+/* ---------- Estado ---------- */
+function nuevo(){ return {vista:"form", correo:"", niveles:{}, multiples:{}, abiertas:{}, enviado:false, enviando:false, error:"", faltan:[],
+  desbloqueado:false, clave:"", claveError:"", resError:"", borrar:null, borrando:false, borrarError:""}; }
+let S = nuevo(), Respuestas = [], refresco = null;
+const lista = v => Array.isArray(v) ? v : v ? [v] : [];
+const correoValido = c => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(c || "").trim());
+function respondidas(){
+  return NIVELES.filter(n => S.niveles[n.id] != null).length
+    + MULTIPLES.filter(m => lista(S.multiples[m.id]).length).length
+    + ABIERTAS.filter(a => (S.abiertas[a.id] || "").trim()).length;
+}
+const membrete = der => `<div class="membrete gutter"><div class="ancho"><div class="escudos">${img("uaq", "Escudo UAQ")}${img("fca", "Escudo FCA")}</div><span class="der" id="der">${der}</span></div></div>`;
+
+function banda(admin){
+  return `<header class="banda gutter"><span class="lineas"><i></i><i></i><i></i></span><div class="ancho">
+    <p class="etq-lima">Primer Semestre · Grupo 19 · ${admin ? "Solo Administradores" : "Encuesta"}</p>
+    <h1>${admin ? "Resultados De La Encuesta" : "Integración Del Grupo"}</h1>
+    <p class="desc">${admin ? "Promedios, elecciones y respuestas abiertas del grupo. Se actualizan solos cada 30 segundos." : "Esta Encuesta Tiene El Objetivo De Conocer Cómo Percibe El Grupo La Facilidad O Falta De Integración Del Mismo. Cualquier Nombre Permanecerá En Anonimato."}</p>
+    ${admin ? `<div class="pestanas"><button class="pestana" type="button" id="volver">Volver A La Encuesta</button>${S.desbloqueado ? `<button class="pestana" type="button" id="actualizar">Actualizar Ahora</button>` : ""}</div>` : ""}
+  </div></header>`;
+}
+function render(){
+  if (S.vista === "res" && S.desbloqueado) return renderRes();
+  if (S.vista === "clave" || S.vista === "res") return renderClave();
+  renderForm();
+}
+function enlazarPestanas(){
+  const v = document.getElementById("volver");
+  if (v) v.onclick = () => { S.vista = "form"; render(); window.scrollTo(0,0); };
+  const a = document.getElementById("actualizar");
+  if (a) a.onclick = () => cargarResultados();
+}
+
+/* ---------- Acceso de administradores ---------- */
+function renderClave(){
+  $app.innerHTML = `${membrete("Acceso Restringido")}${banda(true)}
+  <main class="cuerpo gutter"><div class="ancho pila">
+    <form class="candado" id="f-clave" novalidate>
+      <div class="encabezado"><span class="etq">Solo Administradores</span><h2>Escribe La Contraseña</h2></div>
+      <label class="lab" for="clave">Contraseña De Resultados</label>
+      <input class="campo${S.claveError ? " mal" : ""}" id="clave" type="password" autocomplete="current-password" spellcheck="false">
+      ${S.claveError ? `<p class="aviso error">${esc(S.claveError)}</p>` : ""}
+      <button class="btn" id="b-clave" type="submit">Ver Resultados</button>
+    </form>
+  </div></main>`;
+  enlazarPestanas();
+  const inp = document.getElementById("clave"); inp.focus();
+  document.getElementById("f-clave").onsubmit = async e => {
+    e.preventDefault();
+    const b = document.getElementById("b-clave"); b.disabled = true; b.textContent = "Revisando…";
+    let r;
+    try { r = await api("resultados", inp.value); } catch (err){ r = {error:"conexion"}; }
+    if (r && r.ok){
+      S.clave = inp.value; S.desbloqueado = true; S.claveError = ""; S.vista = "res"; Respuestas = r.ok;
+      iniciarRefresco(); render(); window.scrollTo(0,0); return;
+    }
+    S.claveError = r && r.error === "clave" ? "La contraseña no es correcta. Revisa mayúsculas, minúsculas y guiones."
+      : r && r.error === "bloqueado" ? "Hubo demasiados intentos fallidos. Espera 10 minutos y vuelve a intentarlo."
+      : "No se pudo conectar con la hoja de respuestas. Revisa tu internet y vuelve a intentarlo.";
+    renderClave();
+  };
+}
+async function cargarResultados(){
+  if (!S.desbloqueado) return;
+  try {
+    const r = await api("resultados", S.clave);
+    if (r && r.ok){ Respuestas = r.ok; S.resError = ""; }
+    else S.resError = "No se pudieron actualizar los resultados. Vuelve a escribir la contraseña.";
+  } catch (e){ S.resError = "No se pudieron actualizar los resultados por un problema de conexión."; }
+  if (S.vista === "res" && !S.borrar) renderRes();
+}
+function iniciarRefresco(){
+  if (refresco) return;
+  refresco = setInterval(() => { if (S.vista === "res" && document.visibilityState === "visible") cargarResultados(); }, 30000);
+}
+
+/* ---------- Formulario ---------- */
+function renderForm(){
+  if (S.enviado){
+    $app.innerHTML = `${membrete("Respuesta Registrada")}${banda()}
+      <main class="cuerpo gutter"><div class="ancho pila">
+        <div class="listo anima"><strong>Gracias, Tu Respuesta Quedó Registrada Con El Correo <span class="sin-mayus">${esc(S.correo)}</span></strong>
+          <span>Te Pedimos Por Favor No Volver A Responder La Encuesta ¡Gracias!</span></div>
+      </div></main>`;
+    enlazarPestanas();
+    return;
+  }
+  const falta = id => S.faltan.includes(id) ? " falta" : "";
+  let n = 0;
+  $app.innerHTML = `${membrete(`${respondidas()} De ${TOTAL} Respondidas`)}${banda()}
+  <main class="cuerpo gutter"><form class="ancho pila" id="forma" novalidate>
+    ${!CONECTADA ? `<div class="aviso error">Esta copia de la encuesta todavía no está conectada a su hoja de respuestas, así que no se puede enviar. Ábrela desde el enlace que te compartieron.</div>` : ""}
+
+    <section class="seccion">
+      <div class="encabezado"><span class="etq">01 · Antes De Empezar</span><h2>Tu Correo Electrónico</h2></div>
+      <div class="preg${falta("correo")}" id="p-correo">
+        <label class="lab" for="correo">Correo Electrónico</label>
+        <input class="campo" id="correo" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="120" placeholder="tucorreo@ejemplo.com" value="${esc(S.correo)}">
+      </div>
+    </section>
+
+    <section class="seccion">
+      <div class="encabezado"><span class="etq">02 · Niveles De Satisfacción</span><h2>Del 1 Al 10, ¿Cómo Lo Vives?</h2></div>
+      <p class="nota">Arrastra La Barra O Toca El Número. Siendo Uno El Más Bajo, Y Diez El Más Alto.</p>
+      ${NIVELES.map(p => { n++; const v = S.niveles[p.id] ?? null; return `
+      <div class="preg${falta(p.id)}" id="p-${p.id}">
+        <span class="num">Pregunta ${nn(n)}</span>
+        <p class="q" id="q-${p.id}">${esc(p.q)}</p>
+        <div class="nivel">
+          <div class="cara" id="cara-${p.id}">${caraSVG(v)}</div>
+          <div class="control">
+            <div class="lectura"><span class="valor" id="val-${p.id}">${v ?? "–"}</span><span class="estado" id="est-${p.id}">${ESTADO(v)}</span></div>
+            <input type="range" min="1" max="10" step="1" id="r-${p.id}" data-id="${p.id}" value="${v ?? 5}" aria-labelledby="q-${p.id}" aria-valuetext="${v ? v + " de 10" : "sin responder"}">
+            <div class="marcas">${[1,2,3,4,5,6,7,8,9,10].map(k => `<button type="button" data-id="${p.id}" data-k="${k}" aria-label="${k}" aria-current="${v === k}">${k}</button>`).join("")}</div>
+            <div class="extremos"><span>${esc(p.bajo)}</span><span>${esc(p.alto)}</span></div>
+          </div>
+        </div>
+      </div>`; }).join("")}
+    </section>
+
+    <section class="seccion">
+      <div class="encabezado"><span class="etq">03 · Opción Múltiple</span><h2>Elige Todas Las Que Apliquen</h2></div>
+      <p class="nota">Selecciona Todas Las Opciones Que Concuerden Contigo.</p>
+      ${MULTIPLES.map(p => { n++; const sel = lista(S.multiples[p.id]); return `
+      <div class="preg${falta(p.id)}" id="p-${p.id}">
+        <span class="num">Pregunta ${nn(n)}</span>
+        <p class="q" id="q-${p.id}">${esc(p.q)}</p>
+        <div class="opciones" role="group" aria-labelledby="q-${p.id}">
+          ${p.o.map((o, i) => `<button type="button" class="op" role="checkbox" id="${p.id}-${i}" data-id="${p.id}" data-i="${i}" aria-checked="${sel.includes(o)}"><span class="marca"></span><span>${esc(o)}</span></button>`).join("")}
+        </div>
+      </div>`; }).join("")}
+    </section>
+
+    <section class="seccion">
+      <div class="encabezado"><span class="etq">04 · Preguntas Abiertas</span><h2>Con Tus Propias Palabras</h2></div>
+      ${ABIERTAS.map(p => { n++; const t = S.abiertas[p.id] || ""; return `
+      <div class="preg${falta(p.id)}" id="p-${p.id}">
+        <span class="num">Pregunta ${nn(n)}</span>
+        <label class="q" for="t-${p.id}">${esc(p.q)}</label>
+        <textarea id="t-${p.id}" data-id="${p.id}" maxlength="${MAXTXT}" placeholder="Escribe tu respuesta…">${esc(t)}</textarea>
+        <span class="contador" id="c-${p.id}">${t.length} / ${MAXTXT}</span>
+      </div>`; }).join("")}
+    </section>
+
+    ${S.error ? `<div class="aviso error" id="error">${esc(S.error)}</div>` : ""}
+    <button class="btn" id="enviar" type="submit" ${!CONECTADA || S.enviando ? "disabled" : ""}>${S.enviando ? "Enviando…" : "Enviar Respuesta"}</button>
+  </form></main>`;
+  enlazarPestanas();
+  enlazarForm();
+}
+
+function actualizarCabecera(){ const d = document.getElementById("der"); if (d) d.textContent = `${respondidas()} De ${TOTAL} Respondidas`; }
+function quitarFalta(id){ S.faltan = S.faltan.filter(x => x !== id); document.getElementById("p-" + id)?.classList.remove("falta"); }
+
+function pintarNivel(id){
+  const v = S.niveles[id] ?? null, r = document.getElementById("r-" + id);
+  document.getElementById("cara-" + id).innerHTML = caraSVG(v);
+  document.getElementById("val-" + id).textContent = v ?? "–";
+  document.getElementById("val-" + id).style.color = v == null ? "" : rasgo(v);
+  document.getElementById("est-" + id).textContent = ESTADO(v);
+  const valor = v ?? 5;
+  r.value = valor;
+  r.style.setProperty("--pct", ((valor - 1) / 9 * 100) + "%");
+  r.style.setProperty("--tono", tono(v));
+  r.setAttribute("aria-valuetext", v ? `${v} de 10, ${ESTADO(v)}` : "sin responder");
+  r.closest(".control").querySelectorAll(".marcas button").forEach(b => b.setAttribute("aria-current", String(+b.dataset.k === v)));
+}
+function fijarNivel(id, v){ S.niveles[id] = v; pintarNivel(id); quitarFalta(id); actualizarCabecera(); }
+
+function enlazarForm(){
+  NIVELES.forEach(p => pintarNivel(p.id));
+  const cor = document.getElementById("correo");
+  if (cor) cor.oninput = () => { S.correo = cor.value; if (correoValido(cor.value)) quitarFalta("correo"); };
+  $app.querySelectorAll('input[type=range]').forEach(r => {
+    const id = r.dataset.id;
+    r.oninput = () => fijarNivel(id, +r.value);
+    r.onpointerdown = () => { if (S.niveles[id] == null) requestAnimationFrame(() => fijarNivel(id, +r.value)); };
+  });
+  $app.querySelectorAll(".marcas button").forEach(b => b.onclick = () => fijarNivel(b.dataset.id, +b.dataset.k));
+  $app.querySelectorAll('.op[role="checkbox"]').forEach(b => b.onclick = () => {
+    const id = b.dataset.id, p = MULTIPLES.find(m => m.id === id), o = p.o[+b.dataset.i];
+    let sel = lista(S.multiples[id]).slice();
+    sel = sel.includes(o) ? sel.filter(x => x !== o) : sel.concat(o);
+    S.multiples[id] = p.o.filter(x => sel.includes(x));
+    if (sel.length) quitarFalta(id);
+    b.parentElement.querySelectorAll(".op").forEach(x => x.setAttribute("aria-checked", String(sel.includes(p.o[+x.dataset.i]))));
+    actualizarCabecera();
+  });
+  $app.querySelectorAll("textarea[data-id]").forEach(t => t.oninput = () => {
+    const id = t.dataset.id; S.abiertas[id] = t.value;
+    document.getElementById("c-" + id).textContent = `${t.value.length} / ${MAXTXT}`;
+    if (t.value.trim()) quitarFalta(id); actualizarCabecera();
+  });
+  document.getElementById("forma").onsubmit = e => { e.preventDefault(); enviar(); };
+}
+
+async function enviar(){
+  if (S.enviando || !CONECTADA) return;
+  const faltan = [];
+  if (!correoValido(S.correo)) faltan.push("correo");
+  NIVELES.forEach(p => { if (S.niveles[p.id] == null) faltan.push(p.id); });
+  MULTIPLES.forEach(p => { if (!lista(S.multiples[p.id]).length) faltan.push(p.id); });
+  ABIERTAS.forEach(p => { if (!(S.abiertas[p.id] || "").trim()) faltan.push(p.id); });
+  S.faltan = faltan;
+  if (faltan.length){
+    const preg = faltan.filter(x => x !== "correo").length;
+    const partes = [];
+    if (faltan.includes("correo")) partes.push(S.correo.trim() ? "Revisa tu correo electrónico, parece incompleto." : "Escribe tu correo electrónico.");
+    if (preg) partes.push(`Te ${preg === 1 ? "falta 1 pregunta" : `faltan ${preg} preguntas`} por responder.`);
+    S.error = partes.join(" ") + " Lo que falta está marcado en rojo.";
+    renderForm();
+    document.getElementById("p-" + faltan[0])?.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block:"center"});
+    return;
+  }
+  S.error = ""; S.enviando = true; renderForm();
+  const correo = S.correo.trim().toLowerCase().slice(0, 120);
+  const doc = {
+    correo,
+    niveles: Object.fromEntries(NIVELES.map(p => [p.id, S.niveles[p.id]])),
+    multiples: Object.fromEntries(MULTIPLES.map(p => [p.id, lista(S.multiples[p.id]).filter(o => p.o.includes(o))])),
+    abiertas: Object.fromEntries(ABIERTAS.map(p => [p.id, (S.abiertas[p.id] || "").trim().slice(0, MAXTXT)])),
+  };
+  let r;
+  try { r = await api("enviar", doc); } catch (e){ r = {error:"conexion"}; }
+  S.enviando = false;
+  if (r && r.ok){
+    guardarMarca(correo); S.correo = correo; S.enviado = true; render(); window.scrollTo(0,0); return;
+  }
+  S.error = r && r.error === "duplicado"
+    ? "Este correo ya registró una respuesta. Cada correo puede responder la encuesta una sola vez."
+    : r && r.error === "datos"
+    ? "Algunas respuestas no llegaron completas. Revísalas y vuelve a enviar."
+    : "No se pudo enviar por un problema de conexión. Revisa tu internet y vuelve a intentarlo.";
+  renderForm();
+  document.getElementById("error")?.scrollIntoView({block:"center"});
+}
+
+/* ---------- Resultados ---------- */
+const prom = arr => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+const f1 = x => x == null ? "–" : x.toFixed(1);
+function renderRes(){
+  const R = Respuestas.slice().sort((a, b) => String(a.enviado).localeCompare(String(b.enviado))), total = R.length;
+  const porNivel = NIVELES.map(p => {
+    const vals = R.map(r => r.niveles && r.niveles[p.id]).filter(v => typeof v === "number" && v >= 1 && v <= 10);
+    const dist = Array.from({length:10}, (_, i) => vals.filter(v => v === i + 1).length);
+    return {p, vals, media: prom(vals), dist};
+  });
+  const indice = prom(porNivel.map(x => x.media).filter(x => x != null));
+  const porMult = MULTIPLES.map(p => {
+    const cuenta = p.o.map(o => [o, R.filter(r => r.multiples && lista(r.multiples[p.id]).includes(o)).length]);
+    return {p, cuenta: cuenta.sort((a, b) => b[1] - a[1])};
+  });
+
+  let lectura = "";
+  if (total){
+    const nivel = indice >= 7.5 ? "alta" : indice >= 5.5 ? "media" : "baja";
+    const orden = porNivel.filter(x => x.media != null).slice().sort((a, b) => a.media - b.media);
+    const bajo = orden[0], alto = orden[orden.length - 1];
+    const ob = porMult[0].cuenta[0], ac = porMult[1].cuenta[0];
+    lectura = `<div class="lectura-final">
+      <span class="etq">Lectura Rápida</span>
+      <ul>
+        <li>El grupo percibe una integración <b>${nivel}</b>: el promedio de los seis niveles es ${f1(indice)} de 10.</li>
+        <li>Lo mejor valorado: “${esc(alto.p.q)}” con ${f1(alto.media)}.</li>
+        <li>Lo que más hay que trabajar: “${esc(bajo.p.q)}” con ${f1(bajo.media)}.</li>
+        ${ob[1] ? `<li>El obstáculo más señalado es “${esc(ob[0])}”: lo eligieron ${ob[1]} de ${total} personas.</li>` : ""}
+        ${ac[1] ? `<li>La actividad que más se pide es “${esc(ac[0])}”: la eligieron ${ac[1]} de ${total} personas.</li>` : ""}
+      </ul>
+      <p style="color:var(--menta); font-size:14px">Esta lectura se calcula sola con las respuestas; revísala junto con las respuestas abiertas.</p>
+    </div>`;
+  }
+
+  let sec = 0;
+  $app.innerHTML = `${membrete("Resultados")}${banda(true)}
+  <main class="cuerpo gutter"><div class="ancho pila">
+    ${S.resError ? `<div class="aviso error">${esc(S.resError)}</div>` : ""}
+    ${!total ? `<div class="vacio">Todavía no hay respuestas. Cuando tus compañeros envíen la encuesta, aquí verás los promedios, las elecciones y lo que escribieron.</div>` : `
+    <div class="dato">
+      <div><span class="cifra">${total}</span><p>Respuestas registradas</p></div>
+      <div><span class="cifra">${f1(indice)}<small> / 10</small></span><p>Índice de integración (promedio de los seis niveles)</p></div>
+    </div>
+    ${lectura}
+    <section class="seccion">
+      <div class="encabezado"><span class="etq">${nn(++sec)} · Niveles De Satisfacción</span><h2>Promedio Por Pregunta</h2></div>
+      <div>${porNivel.map((x, i) => { const max = Math.max(...x.dist, 1); return `
+        <div class="res-nivel">
+          <div class="cara">${caraSVG(x.media == null ? null : Math.round(x.media * 10) / 10)}</div>
+          <div>
+            <p class="t">${nn(i + 1)}. ${esc(x.p.q)}</p>
+            <p><span class="prom">${f1(x.media)} / 10</span> <span class="nota">· ${x.vals.length} respuestas</span></p>
+            <div class="dist" aria-label="Distribución de respuestas del 1 al 10">${x.dist.map((c, k) => `<i title="${k + 1}: ${c}" style="height:${c / max * 100}%; background:${c ? tono(k + 1) : "var(--linea)"}"></i>`).join("")}</div>
+            <div class="dist-num">${x.dist.map((c, k) => `<span>${k + 1}</span>`).join("")}</div>
+          </div>
+        </div>`; }).join("")}</div>
+    </section>
+    ${porMult.map(x => `
+    <section class="seccion">
+      <div class="encabezado"><span class="etq">${nn(++sec)} · Opción Múltiple</span><h2>${esc(x.p.q)}</h2></div>
+      <p class="nota">Cada persona podía elegir varias opciones; el porcentaje es sobre ${total} ${total === 1 ? "persona" : "personas"}, por eso puede sumar más de 100 %.</p>
+      <div class="barras">${x.cuenta.map(([o, c]) => `
+        <div class="r"><span>${esc(o)}</span><b>${c} · ${Math.round(c / total * 100)} %</b><div class="pista"><i style="width:${c / total * 100}%"></i></div></div>`).join("")}</div>
+    </section>`).join("")}
+    ${ABIERTAS.map(p => `
+    <section class="seccion">
+      <div class="encabezado"><span class="etq">${nn(++sec)} · Pregunta Abierta</span><h2>${esc(p.q)}</h2></div>
+      <div class="respuestas-ab">${R.filter(r => r.abiertas && r.abiertas[p.id]).map(r => `
+        <div class="resp"><span class="quien sin-mayus">${esc(r.correo || "Sin correo")}</span><span>${esc(r.abiertas[p.id])}</span></div>`).join("")}</div>
+    </section>`).join("")}
+    <section class="seccion">
+      <div class="encabezado"><span class="etq">${nn(++sec)} · Administración</span><h2>Registro De Respuestas</h2></div>
+      <p class="nota">Al eliminar una respuesta, se borra de la hoja de Google y de todos los resultados, y esa persona podrá volver a responder.</p>
+      ${S.borrarError ? `<div class="aviso error">${esc(S.borrarError)}</div>` : ""}
+      <div class="registro">${R.map((r, i) => registroFila(r, i)).join("")}</div>
+    </section>`}
+  </div></main>`;
+  enlazarPestanas();
+  enlazarRegistro();
+}
+
+const fecha = iso => { try { return new Date(iso).toLocaleString("es-MX", {day:"numeric", month:"short", hour:"2-digit", minute:"2-digit"}); } catch (e){ return ""; } };
+function registroFila(r, i){
+  const b = S.borrar && S.borrar.id === r._id ? S.borrar : null;
+  let acciones = `<button type="button" class="mini peligro" data-borrar="${esc(r._id)}">Eliminar</button>`;
+  let aviso = "";
+  if (b && b.paso === 1){
+    aviso = `<div class="confirma">¿Eliminar la respuesta de <span class="sin-mayus">${esc(r.correo || "este usuario")}</span>?</div>`;
+    acciones = `<button type="button" class="mini peligro lleno" data-paso2="${esc(r._id)}">Sí, Eliminar</button><button type="button" class="mini" data-cancelar>Cancelar</button>`;
+  } else if (b && b.paso === 2){
+    aviso = `<div class="confirma fuerte">Confirmación final: la respuesta se borrará para siempre y no se puede recuperar.</div>`;
+    acciones = `<button type="button" class="mini peligro lleno" data-final="${esc(r._id)}" ${S.borrando ? "disabled" : ""}>${S.borrando ? "Eliminando…" : "Eliminar Definitivamente"}</button><button type="button" class="mini" data-cancelar ${S.borrando ? "disabled" : ""}>Cancelar</button>`;
+  }
+  return `<div class="fila-reg${b ? " activa" : ""}">
+    <div class="who"><span class="etq">Usuario ${nn(i + 1)}</span><span class="sin-mayus correo">${esc(r.correo || "Sin correo")}</span><span class="nota">${esc(fecha(r.enviado))}</span></div>
+    <div class="acc">${acciones}</div>
+    ${aviso}
+  </div>`;
+}
+function enlazarRegistro(){
+  $app.querySelectorAll("[data-borrar]").forEach(b => b.onclick = () => { S.borrar = {id:b.dataset.borrar, paso:1}; S.borrarError = ""; renderRes(); });
+  $app.querySelectorAll("[data-paso2]").forEach(b => b.onclick = () => { S.borrar = {id:b.dataset.paso2, paso:2}; renderRes(); });
+  $app.querySelectorAll("[data-cancelar]").forEach(b => b.onclick = () => { S.borrar = null; renderRes(); });
+  $app.querySelectorAll("[data-final]").forEach(b => b.onclick = async () => {
+    if (S.borrando) return;
+    S.borrando = true; renderRes();
+    let r;
+    try { r = await api("eliminar", S.clave, b.dataset.final); } catch (e){ r = {error:"conexion"}; }
+    S.borrando = false;
+    if (r && "ok" in r){ S.borrar = null; S.borrarError = ""; await cargarResultados(); return; }
+    S.borrarError = r && r.error === "clave" ? "La contraseña ya no es válida. Vuelve a entrar a los resultados." : "No se pudo eliminar por un problema de conexión. Inténtalo de nuevo.";
+    renderRes();
+  });
+}
+
+/* ---------- Arranque ---------- */
+render();
+(async () => {
+  const marca = leerMarca();
+  if (!marca || !CONECTADA) return;
+  try {
+    const r = await api("existe", marca);
+    if (r && r.ok === true){ S.correo = marca; S.enviado = true; if (S.vista === "form") render(); }
+    else if (r && r.ok === false) borrarMarca();     // un administrador la eliminó: puede volver a responder
+  } catch (e){}
+})();
+</script>
+</body>
+</html>
